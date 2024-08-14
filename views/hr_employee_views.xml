@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit the existing employee form view to add a custom button -->
+    <record id="view_employee_form_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit</field> <!-- Name of the inherited view -->
+        <field name="model">hr.employee</field> <!-- Model that this view applies to -->
+        <field name="inherit_id" ref="hr.view_employee_form"/> <!-- Reference to the original form view being inherited -->
+
+        <field name="arch" type="xml">
+            <!-- Insert the new button inside the existing button box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <!-- Button to request information change -->
+                <button name="action_request_change" type="object" class="oe_stat_button" icon="fa-pencil">
+                    <!-- Displays the count of change requests related to the employee -->
+                    <field name="change_request_ids" widget="statinfo" string="Change Requests"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

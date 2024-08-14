@@ -17,3 +17,4 @@ class HrEmployee(models.Model):
             'context': {'default_employee_id': self.id},  # Pre-fill the employee field in the form
             'target': 'new',  # Open the form in a new window
         }
+#

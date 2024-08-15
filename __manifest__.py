@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     'name': "hr_employee_info_update",
 
@@ -23,6 +22,7 @@ Long description of module's purpose
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'security/hr_security.xml',
         'views/views.xml',
         'views/templates.xml',
         'views/hr_employee_views.xml',
@@ -35,4 +35,5 @@ Long description of module's purpose
         'demo/demo.xml',
     ],
 }
+# -*- coding: utf-8 -*-
 

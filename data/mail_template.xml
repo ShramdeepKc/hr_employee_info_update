@@ -9,8 +9,8 @@
             <field name="email_to">{{ object.employee_id.company_id.email }}</field>
             <field name="body_html" type="html">
                 <p>A new change request has been submitted by {{ object.employee_id.name }}.</p>
-                <p>Field to change: {{ object.field_name }}</p>
-                <p>New value: {{ object.new_value }}</p>
+                <p><strong>Field to change:</strong> {{ object.field_name }}</p>
+                <p><strong>New value:</strong> {{ object.new_value }}</p>
                 <p>Please review and take necessary action.</p>
             </field>
         </record>
@@ -24,7 +24,7 @@
             <field name="body_html" type="html">
                 <p>Dear {{ object.employee_id.name }},</p>
                 <p>Your request to change your {{ object.field_name }} has been approved.</p>
-                <p>The new value: {{ object.new_value }} has been updated in the system.</p>
+                <p>The new value, <strong>{{ object.new_value }}</strong>, has been updated in the system.</p>
             </field>
         </record>
 

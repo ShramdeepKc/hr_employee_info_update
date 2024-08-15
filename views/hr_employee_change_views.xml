@@ -45,7 +45,7 @@
         <field name="name">Employee Change Requests</field>
         <field name="res_model">hr.employee.change</field>
         <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_employee_change_tree"/> <!-- Reference to the Tree View -->
+        <field name="view_id" ref="view_employee_change_tree"/>
     </record>
 
     <!-- Menu Item for Change Requests -->

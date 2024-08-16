@@ -6,9 +6,9 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" decoration-bf="state != 'draft'"/>
-                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" decoration-bf="state != 'submitted'" groups="hr.group_hr_manager"/>
-                    <button name="action_reject" string="Reject" type="object" decoration-bf="state != 'submitted'" groups="hr.group_hr_manager"/>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state in ('approved', 'rejected')"/>
+                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state not in ('submitted')" groups="hr.group_hr_manager"/>
+                    <button name="action_reject" string="Reject" type="object" invisible="state not in ('submitted')" groups="hr.group_hr_manager"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
                 </header>
                 <sheet>
@@ -49,5 +49,5 @@
     </record>
 
     <!-- Menu Item for Change Requests -->
-    <menuitem id="menu_employee_change" name="Change Requests" parent="hr.menu_hr_root" action="action_employee_change" sequence="100"/>
+    <menuitem id="menu_employee_change" name="Change Requests" parent="hr.menu_hr_root" action="action_employee_change" groups="hr.group_hr_manager" sequence="100"/>
 </odoo>

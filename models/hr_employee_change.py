@@ -1,30 +1,23 @@
-# -*- coding: utf-8 -*-
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
-# This model represents an employee's request to change their personal information.
 class HrEmployeeChange(models.Model):
     _name = 'hr.employee.change'
     _description = 'Employee Information Change Request'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    # The employee who is requesting the change.
+    # Fields to store employee change request details
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
-
-    # The field of the employee's record that they want to change.
     field_name = fields.Selection([
         ('name', 'Name'),
         ('work_email', 'Work Email'),
         ('mobile_phone', 'Mobile Phone'),
     ], string='Field to Change', required=True)
-
-    # The current value of the field that is being changed.
     current_value = fields.Char(string='Current Value')
-
-    # The new value that the employee wants to update the field to.
     new_value = fields.Char(string='New Value', required=True)
-
-    # The current status of the change request.
     state = fields.Selection([
         ('draft', 'Draft'),
         ('submitted', 'Submitted'),
@@ -32,35 +25,75 @@ class HrEmployeeChange(models.Model):
         ('rejected', 'Rejected')
     ], string='Status', default='draft', tracking=True)
 
-    # Automatically update the current value of the field when the employee or field is changed.
+    # Automatically set the current value based on selected employee and field
     @api.onchange('employee_id', 'field_name')
     def _onchange_field_name(self):
         if self.employee_id and self.field_name:
             self.current_value = getattr(self.employee_id, self.field_name)
 
-    # Submit the change request, changing its status to 'submitted' and notify the HR manager.
+    # Method to submit the change request for approval
     def action_submit(self):
         self.state = 'submitted'
         self._notify_admin()
 
-    # Approve the change request, updating the employee's record and notifying the employee.
+    # Method to approve the change request and update the employee's information
     def action_approve(self):
         self.state = 'approved'
         setattr(self.employee_id, self.field_name, self.new_value)
         self._notify_employee('approved')
 
-    # Reject the change request and notify the employee.
+    # Method to reject the change request
     def action_reject(self):
         self.state = 'rejected'
         self._notify_employee('rejected')
 
-    # Notify the HR manager that a change request has been submitted.
+    # Helper method to notify the admin about the new change request
     def _notify_admin(self):
-        template = self.env.ref('hr_employee_info_update.email_template_change_request_admin')
         for admin in self.env.ref('hr.group_hr_manager').users:
-            template.send_mail(self.id, force_send=True, email_values={'email_to': admin.partner_id.email})
+            try:
+                subject = _("New Employee Change Request from %s") % self.employee_id.name
+                body_html = _(
+                    """
+                    <p>Dear Admin,</p>
+                    <p>A new change request has been submitted by <strong>%s</strong>.</p>
+                    <p>Field to change: <strong>%s</strong></p>
+                    <p>New value: <strong>%s</strong></p>
+                    <p>Please review and take necessary action.</p>
+                    """
+                ) % (self.employee_id.name, self.field_name, self.new_value)
 
-    # Notify the employee of the approval or rejection of their request.
+                email_values = {
+                    'email_to': admin.partner_id.email,
+                    'subject': subject,
+                    'body_html': body_html,
+                    'email_from': self.env.user.email_formatted,
+                }
+
+                self.env['mail.mail'].create(email_values).send()
+                _logger.info("Notification email sent to admin %s", admin.partner_id.email)
+            except Exception as e:
+                _logger.error("Failed to send email to admin %s: %s", admin.partner_id.email, str(e))
+
+    # Helper method to notify the employee about the result of their change request (approved/rejected)
     def _notify_employee(self, action):
-        template = self.env.ref(f'hr_employee_info_update.email_template_change_request_{action}')
-        template.send_mail(self.id, force_send=True)
+        try:
+            subject = _("Your Change Request Has Been %s") % action.capitalize()
+            body_html = _(
+                """
+                <p>Dear %s,</p>
+                <p>Your request to change your <strong>%s</strong> has been <strong>%s</strong>.</p>
+                <p>%s</p>
+                """
+            ) % (self.employee_id.name, self.field_name, action, _("Thank you for your patience."))
+
+            email_values = {
+                'email_to': self.employee_id.work_email,
+                'subject': subject,
+                'body_html': body_html,
+                'email_from': self.env.user.email_formatted,
+            }
+
+            self.env['mail.mail'].create(email_values).send()
+            _logger.info("Notification email sent to employee %s", self.employee_id.work_email)
+        except Exception as e:
+            _logger.error("Failed to send email to employee %s: %s", self.employee_id.work_email, str(e))
